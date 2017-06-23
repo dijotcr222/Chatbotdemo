@@ -2,12 +2,12 @@
 var builder = require("botbuilder");
 var botbuilder_azure = require("botbuilder-azure");
 var path = require('path');
-var sql = require('mssql');
+/*var sql = require('mssql');*/
 var util = require('util');
 
 var useEmulator = (process.env.NODE_ENV == 'development');
 
-var connection = {
+/*var connection = {
     server: 'dchat.database.windows.net',
     user: 'dijotcr222',
     password: 'D1j0=0kRia123',
@@ -24,7 +24,7 @@ sql.connect(connection, function (err) {
   }else{
     console.log("DB Connected");
   }
-})
+})*/
 
 var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
     appId: process.env['MicrosoftAppId'],
@@ -37,7 +37,7 @@ var bot = new builder.UniversalBot(connector);
 bot.localePath(path.join(__dirname, './locale'));
 
 bot.dialog('/', function (session) {
-    var conn = new sql.Connection(connection);
+    /*var conn = new sql.Connection(connection);
     var reqs = new sql.Request(conn);
 
     conn.connect(function(err){
@@ -55,7 +55,7 @@ bot.dialog('/', function (session) {
             }
         });
       }
-    });
+    });*/
     if (!session.userData.greeting) {
 
         session.send("Hi DIJO.  We think that you’d best suit a KiwiSaver Balanced fund but it’s possible you’d prefer an alternative fund.  What would you like to do?");
