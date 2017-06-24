@@ -6,14 +6,14 @@ var azure = require('azure-storage');
 
 var local = true;
 var useEmulator = (process.env.NODE_ENV == 'development');
-var tableName = 'BotStore';
 
-var azureTableClient = new azure.AzureTableClient(tableName);
-
-var tableStorage = new azure.AzureBotStorage({ gzipData: false }, azureTableClient);
-
-
-var useEmulator = (process.env.NODE_ENV == 'development');
+var tableService = azure.createTableService();
+tableService.createTableIfNotExists('chattable', function(error, result, response) {
+  if (!error) {
+    // result contains true if created; false if already exists
+  }
+});
+var entGen = azure.TableUtilities.entityGenerator;
 
 
 var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
@@ -28,7 +28,17 @@ bot.localePath(path.join(__dirname, './locale'));
 
 bot.dialog('/', function (session) {
     session.send('You said ' + session.message.text);
-}).set('storage', tableStorage);
+    var entity = {
+      ChatId: entGen.String(session.message.address.id),
+      Message: entGen.String(session.message.text),
+      LocalTime: entGen.String(session.message.localTimestamp)
+    };
+    tableService.insertEntity('chattable', entity, function(error, result, response) {
+      if (!error) {
+        // result contains the ETag for the new entity
+      }
+    });
+});
 
 
 
