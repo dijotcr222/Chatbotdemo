@@ -8,10 +8,10 @@ var util = require('util');
 var useEmulator = (process.env.NODE_ENV == 'development');
 
 var connection = {
-    server: 'dchat.database.windows.net',
+    server: 'chattable.database.windows.net',
     user: 'dijotcr222',
     password: 'D1j0=0kRia123',
-    database: 'MYChatTest',
+    database: 'ChatTest',
     options: {
 	       encrypt: true
 	  }
