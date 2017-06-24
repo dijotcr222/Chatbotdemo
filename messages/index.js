@@ -37,7 +37,7 @@ function savedata(session){
       console.log(err)
     }else{
       var SqlSt = "INSERT into ChatTable (ChatID, ChatMessage, localTime) VALUES";
-      SqlSt += util.format("(%d,%s,%s)", 454,"'Hi this is Saving'","'Hi this is Saving'" );
+      SqlSt += util.format("(%d,%s,%s)", 54,"'Hi this is Saving'","'Hi this is Saving'" );
       reqs.query(SqlSt, function(err, data){
           if(err){
             console.log(err);
