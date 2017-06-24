@@ -3,7 +3,30 @@ var builder = require("botbuilder");
 var botbuilder_azure = require("botbuilder-azure");
 var path = require('path');
 
+var local = true;
+var sql = require('mssql');
+var util = require('util');
+
 var useEmulator = (process.env.NODE_ENV == 'development');
+
+var connection = {
+    server: 'chattable.database.windows.net',
+    user: 'demo123',
+    password: 'D1j0=0kRia123',
+    database: 'ChatTable',
+    options: {
+	       encrypt: true
+	  }
+};
+
+sql.connect(connection, function (err) {
+  if(err){
+    console.log(err);
+    console.log("Error in connection");
+  }else{
+    console.log("DB Connected");
+  }
+})
 
 var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
     appId: process.env['MicrosoftAppId'],
