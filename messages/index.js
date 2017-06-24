@@ -28,6 +28,27 @@ sql.connect(connection, function (err) {
   }
 })
 
+function savedata(session){
+  var conn = new sql.Connection(connection);
+  var reqs = new sql.Request(conn);
+
+  conn.connect(function(err){
+    if(err){
+      console.log(err)
+    }else{
+      var SqlSt = "INSERT into ChatTable (ChatID, ChatMessage, localTime) VALUES";
+      SqlSt += util.format("(%d,%s,%s)", 454,"'"+session.message.text+"'","'"+session.message.localTimestamp+"'" );
+      reqs.query(SqlSt, function(err, data){
+          if(err){
+            console.log(err);
+          }else{
+            console.log("Saved")
+          }
+      });
+    }
+  });
+}
+
 var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
     appId: process.env['MicrosoftAppId'],
     appPassword: process.env['MicrosoftAppPassword'],
@@ -39,26 +60,12 @@ var bot = new builder.UniversalBot(connector);
 bot.localePath(path.join(__dirname, './locale'));
 
 bot.dialog('/', function (session) {
-    var conn = new sql.Connection(connection);
-    var reqs = new sql.Request(conn);
-
-    conn.connect(function(err){
-      if(err){
-        console.log(err)
-      }else{
-        var SqlSt = "INSERT into ChatTable (ChatID, ChatMessage, localTime) VALUES";
-        SqlSt += util.format("(%d,%s,%s)", 454,"'"+session.message.text+"'","'"+session.message.localTimestamp+"'" );
-        reqs.query(SqlSt, function(err, data){
-            if(err){
-              console.log(err);
-            }else{
-              console.log("Saved")
-            }
-        });
-      }
-    });
     session.send('You said ' + session.message.text);
+    savedata(session)
 });
+
+
+
 
 if (useEmulator) {
     var restify = require('restify');
