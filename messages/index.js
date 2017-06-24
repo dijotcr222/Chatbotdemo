@@ -8,11 +8,11 @@ var Connection = require('tedious').Connection;
 var Request = require('tedious').Request;
 
 var config = {
-  userName: 'demo123', // update me
-  password: 'D1j0=0kRia123', // update me
-  server: 'chattable.database.windows.net', // update me
+  userName: 'rootchat', // update me
+  password: 'chat@123', // update me
+  server: 'chatdbdemo.database.windows.net', // update me
   options: {
-      database: 'ChatTable', //update me
+      database: 'ChatDBDemo', //update me
       encrypt : true
   }
 }
@@ -29,7 +29,7 @@ function savedata(session){
         else{
           console.log("Inserting a brand new chat into database...");
           request = new Request(
-              "INSERT INTO ChatTable (ChatID,ChatMessage, localTime) VALUES (23,'fggh', 'jhgjh')",
+              "INSERT INTO chat_info (chat_id,message, time_stamp) VALUES ('23','fggh', 'jhgjh')",
               function(err, rowCount, rows) {
                   console.log(rowCount + ' row(s) inserted');
               }
