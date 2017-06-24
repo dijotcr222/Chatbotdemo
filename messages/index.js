@@ -4,40 +4,32 @@ var botbuilder_azure = require("botbuilder-azure");
 var path = require('path');
 
 var local = true;
-var Connection = require('tedious').Connection;
-var Request = require('tedious').Request;
-
-var config = {
-  userName: 'rootchat', // update me
-  password: 'chat@123', // update me
-  server: 'chatdbdemo.database.windows.net', // update me
-  options: {
-      database: 'ChatDBDemo', //update me
-      encrypt : true
-  }
-}
-
-var connection = new Connection(config);
+var sql = require('mssql');
+var util = require('util');
 
 var useEmulator = (process.env.NODE_ENV == 'development');
 
-function savedata(session){
-    connection.on('connect', function(err) {
-        if (err) {
-            console.log(err)
-        }
-        else{
-          console.log("Inserting a brand new chat into database...");
-          request = new Request(
-              "INSERT INTO chat_info (chat_id,message, time_stamp) VALUES ('23','fggh', 'jhgjh')",
-              function(err, rowCount, rows) {
-                  console.log(rowCount + ' row(s) inserted');
-              }
-          );
-          connection.execSql(request);
-        }
-    });
-}
+var connection = {
+    server: 'chatdbdemo.database.windows.net',
+    user: 'rootchat',
+    password: 'chat@123',
+    database: 'ChatDBDemo',
+    options: {
+	       encrypt: true
+	  }
+};
+
+sql.connect(connection, function (err) {
+  if(err){
+    console.log(err);
+    console.log("Error in connection");
+  }else{
+    console.log("DB Connected");
+  }
+})
+
+var useEmulator = (process.env.NODE_ENV == 'development');
+
 
 var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
     appId: process.env['MicrosoftAppId'],
@@ -51,7 +43,24 @@ bot.localePath(path.join(__dirname, './locale'));
 
 bot.dialog('/', function (session) {
     session.send('You said ' + session.message.text);
-    savedata(session)
+    var conn = new sql.Connection(connection);
+    var reqs = new sql.Request(conn);
+
+    conn.connect(function(err){
+      if(err){
+        console.log(err)
+      }else{
+        var SqlSt = "INSERT into chat_info (chat_id,message, time_stamp) VALUES";
+        SqlSt += util.format("(%s,%s,%s)", "'"+session.message.address.id+"'","'"+session.message.text+"'","'"+session.message.localTimestamp+"'" );
+        reqs.query(SqlSt, function(err, data){
+            if(err){
+              console.log(err);
+            }else{
+              console.log("Saved")
+            }
+        });
+      }
+    });
 });
 
 
