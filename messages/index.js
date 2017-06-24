@@ -4,49 +4,39 @@ var botbuilder_azure = require("botbuilder-azure");
 var path = require('path');
 
 var local = true;
-var sql = require('mssql');
-var util = require('util');
+var Connection = require('tedious').Connection;
+var Request = require('tedious').Request;
+
+var config = {
+  userName: 'demo123', // update me
+  password: 'D1j0=0kRia123', // update me
+  server: 'chattable.database.windows.net', // update me
+  options: {
+      database: 'ChatTable', //update me
+      encrypt : true
+  }
+}
+
+var connection = new Connection(config);
 
 var useEmulator = (process.env.NODE_ENV == 'development');
 
-var connection = {
-    server: 'chattable.database.windows.net',
-    user: 'demo123',
-    password: 'D1j0=0kRia123',
-    database: 'ChatTable',
-    options: {
-	       encrypt: true
-	  }
-};
-
-sql.connect(connection, function (err) {
-  if(err){
-    console.log(err);
-    console.log("Error in connection");
-  }else{
-    console.log("DB Connected");
-  }
-})
-
 function savedata(session){
-  var conn = new sql.Connection(connection);
-  var reqs = new sql.Request(conn);
-
-  conn.connect(function(err){
-    if(err){
-      console.log(err)
-    }else{
-      var SqlSt = "INSERT into ChatTable (ChatID, ChatMessage, localTime) VALUES";
-      SqlSt += util.format("(%d,%s,%s)", 54,"'Hi this is Saving'","'Hi this is Saving'" );
-      reqs.query(SqlSt, function(err, data){
-          if(err){
-            console.log(err);
-          }else{
-            console.log("Saved")
-          }
-      });
-    }
-  });
+    connection.on('connect', function(err) {
+        if (err) {
+            console.log(err)
+        }
+        else{
+          console.log("Inserting a brand new chat into database...");
+          request = new Request(
+              "INSERT INTO ChatTable (ChatID,ChatMessage, localTime) VALUES (23,'BrandNewProduct', '200989')",
+              function(err, rowCount, rows) {
+                  console.log(rowCount + ' row(s) inserted');
+              }
+          );
+          connection.execSql(request);
+        }
+    });
 }
 
 var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
