@@ -9,9 +9,9 @@ var useEmulator = (process.env.NODE_ENV == 'development');
 
 var connection = {
     server: 'chattable.database.windows.net',
-    user: 'dijotcr222',
+    user: 'demo123',
     password: 'D1j0=0kRia123',
-    database: 'ChatTest',
+    database: 'ChatTable',
     options: {
 	       encrypt: true
 	  }
@@ -44,7 +44,7 @@ bot.dialog('/api/message', function (session) {
         console.log(err)
       }else{
         var SqlSt = "INSERT into ChatTable (ChatID, ChatMessage, localTime) VALUES";
-        SqlSt += util.format("(%d,%s,%s)", session.message.address.id,"'"+session.message.text+"'","'"+session.message.localTimestamp+"'" );
+        SqlSt += util.format("(%d,%s,%s)", 45,"'"+session.message.text+"'","'"+session.message.localTimestamp+"'" );
         reqs.query(SqlSt, function(err, data){
             if(err){
               console.log(err);
