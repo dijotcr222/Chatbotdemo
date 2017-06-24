@@ -2,7 +2,7 @@
 var builder = require("botbuilder");
 var botbuilder_azure = require("botbuilder-azure");
 var path = require('path');
-var azure = require('../../');
+var azure = require('azure');
 
 var local = true;
 var useEmulator = (process.env.NODE_ENV == 'development');
