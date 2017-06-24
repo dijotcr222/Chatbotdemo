@@ -1,55 +1,30 @@
-"use strict";
-var builder = require("botbuilder");
-var botbuilder_azure = require("botbuilder-azure");
-var path = require('path');
-var azure = require('azure-storage');
+var builder = require('botbuilder');
+var azure = require("documentdb").DocumentClient;
+var restify = require('restify');
 
-var local = true;
-var useEmulator = (process.env.NODE_ENV == 'development');
+var documentDbOptions = {
+    host: 'https://chatdemo.documents.azure.com:443/', // Host for local DocDb emulator
+    masterKey: 'gUUklsT8oJaE6rUAsNRc1eB3QxBDmWH2Hpvy4jhBXtRleq4sWxeIvlArxoUxSYhbBmil8p9KFjECsVWeKO76tw==', // Fixed key for local DocDb emulator
+    database: 'chatdb',
+    collection: 'chatinfo'
+};
 
-var tableService = azure.createTableService('bnzinfoieidaz', '8ulLlRhP+K8rNWZvuqkBoWkDhjhUdtGoU0xHMZ15xQNuYsY2Exm8XH6gs2/rSU9dJ0J7tamJrqkntCx5X1Ua7w==');
-tableService.createTableIfNotExists('chattable', function(error, result, response) {
-  if (!error) {
-    // result contains true if created; false if already exists
-  }
-});
-var entGen = azure.TableUtilities.entityGenerator;
+var docDbClient = new azure.DocumentDbClient(documentDbOptions);
 
+var tableStorage = new azure.AzureBotStorage({ gzipData: false }, docDbClient);
 
-var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
-    appId: process.env['MicrosoftAppId'],
-    appPassword: process.env['MicrosoftAppPassword'],
-    stateEndpoint: process.env['BotStateEndpoint'],
-    openIdMetadata: process.env['BotOpenIdMetadata']
+var connector = new builder.ChatConnector({
+    appId: process.env.MICROSOFT_APP_ID,
+    appPassword: process.env.MICROSOFT_APP_PASSWORD
 });
 
-var bot = new builder.UniversalBot(connector);
-bot.localePath(path.join(__dirname, './locale'));
+var bot = new builder.UniversalBot(connector, function (session) {
+    session.send("You said: %s", session.message.text);
+}).set('storage', tableStorage);
 
-bot.dialog('/', function (session) {
-    session.send('You said ' + session.message.text);
-    var entity = {
-      ChatId: entGen.String(session.message.address.id),
-      Message: entGen.String(session.message.text),
-      LocalTime: entGen.String(session.message.localTimestamp)
-    };
-    tableService.insertEntity('chattable', entity, function(error, result, response) {
-      if (!error) {
-        // result contains the ETag for the new entity
-      }
-    });
+var server = restify.createServer();
+server.listen(process.env.port || process.env.PORT || 3978, function () {
+   console.log('%s listening to %s', server.name, server.url);
 });
 
-
-
-
-if (useEmulator) {
-    var restify = require('restify');
-    var server = restify.createServer();
-    server.listen(3978, function() {
-        console.log('test bot endpont at http://localhost:3978/api/messages');
-    });
-    server.post('/api/messages', connector.listen());
-} else {
-    module.exports = { default: connector.listen() }
-}
+server.post('/api/messages', connector.listen());
