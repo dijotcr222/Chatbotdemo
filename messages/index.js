@@ -9,7 +9,7 @@ var documentDbOptions = {
     collection: 'chatinfo'
 };
 
-var docDbClient = new azure.DocumentDbClient(documentDbOptions);
+var docDbClient = new azure.DocumentClient(documentDbOptions);
 
 var tableStorage = new azure.AzureBotStorage({ gzipData: false }, docDbClient);
 
