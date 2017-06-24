@@ -4,12 +4,28 @@ var botbuilder_azure = require("botbuilder-azure");
 var path = require('path');
 
 var local = true;
-var sql = require('mssql');
-var util = require('util');
+var Connection = require('tedious').Connection;
+var Request = require('tedious').Request;
+
 
 var useEmulator = (process.env.NODE_ENV == 'development');
 
-var connection = {
+// Create connection to database
+var config = {
+  userName: 'demo123', // update me
+  password: 'D1j0=0kRia123', // update me
+  server: 'chattable.database.windows.net', // update me
+  options: {
+      database: 'ChatTable' //update me
+  }
+}
+
+var connection = new Connection(config);
+
+// Attempt to connect and execute queries if connection goes through
+
+
+/*var connection = {
     server: 'chattable.database.windows.net',
     user: 'demo123',
     password: 'D1j0=0kRia123',
@@ -26,7 +42,7 @@ sql.connect(connection, function (err) {
   }else{
     console.log("DB Connected");
   }
-})
+})*/
 
 function savedata(session){
   var conn = new sql.Connection(connection);
@@ -61,7 +77,21 @@ bot.localePath(path.join(__dirname, './locale'));
 
 bot.dialog('/', function (session) {
     session.send('You said ' + session.message.text);
-    savedata(session)
+    connection.on('connect', function(err) {
+        if (err) {
+            console.log(err)
+        }
+        else{
+          console.log("Inserting a brand new product into database...");
+          request = new Request(
+              "INSERT INTO ChatTable.ChatTable (ChatMessage, localTime) OUTPUT INSERTED.ChatID VALUES ('BrandNewProduct', '200989')",
+              function(err, rowCount, rows) {
+                  console.log(rowCount + ' row(s) inserted');
+              }
+          );
+          connection.execSql(request);
+        }
+    });
 });
 
 
