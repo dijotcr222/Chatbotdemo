@@ -7,7 +7,7 @@ var azure = require('azure-storage');
 var local = true;
 var useEmulator = (process.env.NODE_ENV == 'development');
 
-var tableService = azure.createTableService();
+var tableService = azure.createTableService('bnzinfoieidaz', '8ulLlRhP+K8rNWZvuqkBoWkDhjhUdtGoU0xHMZ15xQNuYsY2Exm8XH6gs2/rSU9dJ0J7tamJrqkntCx5X1Ua7w==');
 tableService.createTableIfNotExists('chattable', function(error, result, response) {
   if (!error) {
     // result contains true if created; false if already exists
