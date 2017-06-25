@@ -9,6 +9,8 @@ var util = require('util');
 
 var useEmulator = (process.env.NODE_ENV == 'development');
 
+sql.close();
+
 var connection = {
     server: 'chatdbdemo.database.windows.net',
     user: 'rootchat',
