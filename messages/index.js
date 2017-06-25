@@ -30,9 +30,6 @@ sql.connect(connection, function (err) {
   }
 })
 
-var conn = new sql.Connection(connection);
-var reqs = new sql.Request(conn);
-
 
 var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
     appId: process.env['MicrosoftAppId'],
@@ -47,6 +44,8 @@ bot.localePath(path.join(__dirname, './locale'));
 bot.dialog('/', function (session) {
     session.send('You said ' + session.message.text);
 
+    var conn = new sql.ConnectionPool(connection);
+    var reqs = new sql.Request(conn);
 
     conn.connect(function(err){
       if(err){
