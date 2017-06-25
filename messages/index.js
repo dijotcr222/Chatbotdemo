@@ -18,7 +18,7 @@ var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure
     stateEndpoint: process.env['BotStateEndpoint'],
     openIdMetadata: process.env['BotOpenIdMetadata']
 });
-var connection = {
+var config = {
     server: 'chatdbdemo.database.windows.net',
     user: 'rootchat',
     password: 'chat@123',
@@ -37,8 +37,7 @@ sql.connect(connection, function (err) {
   }
 })
 
-var conn = new sql.Connection(connection);
-var reqs = new sql.Request(conn);
+
 
 var bot = new builder.UniversalBot(connector);
 bot.localePath(path.join(__dirname, './locale'));
@@ -46,8 +45,8 @@ bot.localePath(path.join(__dirname, './locale'));
 bot.dialog('/', function (session) {
     session.send('You said ' + session.message.text);
 
-
-    setTimeout(function () {
+    var conn = new sql.Connection(config);
+    var reqs = new sql.Request(conn);
       conn.connect(function(err){
         if(err){
           console.log(err)
@@ -63,7 +62,6 @@ bot.dialog('/', function (session) {
           });
         }
       });
-}, 1000)
 
 });
 
