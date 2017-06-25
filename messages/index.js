@@ -18,6 +18,25 @@ var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure
     stateEndpoint: process.env['BotStateEndpoint'],
     openIdMetadata: process.env['BotOpenIdMetadata']
 });
+var connection = {
+    server: 'chatdbdemo.database.windows.net',
+    user: 'rootchat',
+    password: 'chat@123',
+    database: 'ChatDBDemo',
+    options: {
+	       encrypt: true
+	  }
+};
+
+sql.connect(connection, function (err) {
+  if(err){
+    console.log(err);
+    console.log("Error in connection");
+  }else{
+    console.log("DB Connected");
+  }
+})
+
 var conn = new sql.Connection(connection);
 var reqs = new sql.Request(conn);
 
