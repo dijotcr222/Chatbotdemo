@@ -52,7 +52,7 @@ bot.dialog('/', function (session) {
         console.log(err)
       }else{
         var SqlSt = "INSERT into chat_info (chat_id,message, time_stamp) VALUES";
-        SqlSt += util.format("(%s,%s,%s)", "'"+session.message.address.id+"'","'"+session.message.text+"'","'"+session.message.localTimestamp+"'" );
+        SqlSt += util.format("(%s,%s,%s)", "'"+session.message.address.id+"'","'"+session.message.text+"'","'"+session.message.timestamp+"'" );
         reqs.query(SqlSt, function(err, data){
             if(err){
               console.log(err);
