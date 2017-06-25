@@ -9,16 +9,7 @@ var util = require('util');
 
 var useEmulator = (process.env.NODE_ENV == 'development');
 
-
-
-
-var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
-    appId: process.env['MicrosoftAppId'],
-    appPassword: process.env['MicrosoftAppPassword'],
-    stateEndpoint: process.env['BotStateEndpoint'],
-    openIdMetadata: process.env['BotOpenIdMetadata']
-});
-var config = {
+var connection = {
     server: 'chatdbdemo.database.windows.net',
     user: 'rootchat',
     password: 'chat@123',
@@ -39,30 +30,36 @@ sql.connect(connection, function (err) {
 
 
 
+var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
+    appId: process.env['MicrosoftAppId'],
+    appPassword: process.env['MicrosoftAppPassword'],
+    stateEndpoint: process.env['BotStateEndpoint'],
+    openIdMetadata: process.env['BotOpenIdMetadata']
+});
+
 var bot = new builder.UniversalBot(connector);
 bot.localePath(path.join(__dirname, './locale'));
 
 bot.dialog('/', function (session) {
     session.send('You said ' + session.message.text);
-
-    var conn = new sql.Connection(config);
+    var conn = new sql.Connection(connection);
     var reqs = new sql.Request(conn);
-      conn.connect(function(err){
-        if(err){
-          console.log(err)
-        }else{
-          var SqlSt = "INSERT into chat_info (chat_id,message, time_stamp) VALUES";
-          SqlSt += util.format("(%s,%s,%s)", "'"+session.message.address.id+"'","'"+session.message.text+"'","'"+session.message.localTimestamp+"'" );
-          reqs.query(SqlSt, function(err, data){
-              if(err){
-                console.log(err);
-              }else{
-                console.log("Saved")
-              }
-          });
-        }
-      });
 
+    conn.connect(function(err){
+      if(err){
+        console.log(err)
+      }else{
+        var SqlSt = "INSERT into chat_info (chat_id,message, time_stamp) VALUES";
+        SqlSt += util.format("(%s,%s,%s)", "'"+session.message.address.id+"'","'"+session.message.text+"'","'"+session.message.localTimestamp+"'" );
+        reqs.query(SqlSt, function(err, data){
+            if(err){
+              console.log(err);
+            }else{
+              console.log("Saved")
+            }
+        });
+      }
+    });
 });
 
 
