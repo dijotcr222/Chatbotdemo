@@ -1,30 +1,77 @@
-var builder = require('botbuilder');
-var azure = require("documentdb").DocumentClient;
-var restify = require('restify');
+"use strict";
+var builder = require("botbuilder");
+var botbuilder_azure = require("botbuilder-azure");
+var path = require('path');
 
-var documentDbOptions = {
-    host: 'https://chatdemo.documents.azure.com:443/', // Host for local DocDb emulator
-    masterKey: 'gUUklsT8oJaE6rUAsNRc1eB3QxBDmWH2Hpvy4jhBXtRleq4sWxeIvlArxoUxSYhbBmil8p9KFjECsVWeKO76tw==', // Fixed key for local DocDb emulator
-    database: 'chatdb',
-    collection: 'chatinfo'
+var local = true;
+var sql = require('mssql');
+var util = require('util');
+
+var useEmulator = (process.env.NODE_ENV == 'development');
+
+var connection = {
+    server: 'chatdbdemo.database.windows.net',
+    user: 'rootchat',
+    password: 'chat@123',
+    database: 'ChatDBDemo',
+    options: {
+	       encrypt: true
+	  }
 };
 
-var docDbClient = new azure(documentDbOptions);
+sql.connect(connection, function (err) {
+  if(err){
+    console.log(err);
+    console.log("Error in connection");
+  }else{
+    console.log("DB Connected");
+  }
+})
 
-var tableStorage = new azure.AzureBotStorage({ gzipData: false }, docDbClient);
 
-var connector = new builder.ChatConnector({
-    appId: process.env.MICROSOFT_APP_ID,
-    appPassword: process.env.MICROSOFT_APP_PASSWORD
+
+var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
+    appId: process.env['MicrosoftAppId'],
+    appPassword: process.env['MicrosoftAppPassword'],
+    stateEndpoint: process.env['BotStateEndpoint'],
+    openIdMetadata: process.env['BotOpenIdMetadata']
 });
 
-var bot = new builder.UniversalBot(connector, function (session) {
-    session.send("You said: %s", session.message.text);
-}).set('storage', tableStorage);
+var bot = new builder.UniversalBot(connector);
+bot.localePath(path.join(__dirname, './locale'));
 
-var server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, function () {
-   console.log('%s listening to %s', server.name, server.url);
+bot.dialog('/', function (session) {
+    session.send('You said ' + session.message.text);
+    var conn = new sql.Connection(connection);
+    var reqs = new sql.Request(conn);
+
+    conn.connect(function(err){
+      if(err){
+        console.log(err)
+      }else{
+        var SqlSt = "INSERT into chat_info (chat_id,message, time_stamp) VALUES";
+        SqlSt += util.format("(%s,%s,%s)", "'"+session.message.address.id+"'","'"+session.message.text+"'","'"+session.message.localTimestamp+"'" );
+        reqs.query(SqlSt, function(err, data){
+            if(err){
+              console.log(err);
+            }else{
+              console.log("Saved")
+            }
+        });
+      }
+    });
 });
 
-server.post('/api/messages', connector.listen());
+
+
+
+if (useEmulator) {
+    var restify = require('restify');
+    var server = restify.createServer();
+    server.listen(3978, function() {
+        console.log('test bot endpont at http://localhost:3978/api/messages');
+    });
+    server.post('/api/messages', connector.listen());
+} else {
+    module.exports = { default: connector.listen() }
+}
